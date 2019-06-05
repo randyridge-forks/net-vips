@@ -10,6 +10,8 @@ namespace NetVips.Benchmarks
 
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
+    using SixLabors.ImageSharp.Processing.Processors;
+    using SixLabors.ImageSharp.Processing.Processors.Convolution;
     using ImageSharpImage = SixLabors.ImageSharp.Image;
     using ImageSharpRectangle = SixLabors.Primitives.Rectangle;
 
@@ -25,6 +27,13 @@ namespace NetVips.Benchmarks
     public class Benchmark
     {
         private const int Quality = 75;
+
+        private readonly IImageProcessor _processor = new ConvolutionProcessor(new float[,]
+        {
+            {-1, -1, -1},
+            {-1, 16, -1},
+            {-1, -1, -1}
+        }, false);
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -89,7 +98,7 @@ namespace NetVips.Benchmarks
                     .Crop(new ImageSharpRectangle(100, 100, image.Width - 200, image.Height - 200))
                     .Resize((int)Math.Round(image.Width * .9F), (int)Math.Round(image.Height * .9F),
                         KnownResamplers.Triangle)
-                    .GaussianSharpen(.75f));
+                    .ApplyProcessor(_processor, image.Bounds()));
 
                 // Default quality is 75
                 image.Save(output);
